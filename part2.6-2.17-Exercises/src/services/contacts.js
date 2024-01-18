@@ -23,10 +23,7 @@ const create = (contact) => {
 const update = (id, contact) => {
   return axios
     .put(`${baseUrl}/${id}`, contact)
-    .then((response) => response.data)
-    .catch((error) => {
-      console.log(`An error occured in update request. Error: ${error}`);
-    });
+    .then((response) => response.data);
 };
 
 const deleteContact = (id) => {
