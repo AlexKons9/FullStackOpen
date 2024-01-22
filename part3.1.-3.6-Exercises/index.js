@@ -67,7 +67,6 @@ app.post("/api/persons", (request, response) => {
 app.delete("/api/persons/:id", (request ,response) => {
     var id = Number(request.params.id);
     var person = persons.find(x => x.id === id);
-    console.log(person)
 
     if(person) {
         persons = persons.filter(p => p.id !== id);
