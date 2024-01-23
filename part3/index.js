@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-
+const cors = require('cors')
 
 let notes = [
   {
@@ -34,7 +34,8 @@ const unknownEndpoint = (request, response) => {
 
 app.use(express.json());
 app.use(requestLogger);
-
+app.use(cors());
+app.use(express.static('dist'));
 
 const generateId = () => {
   const maxId = notes.length > 0
@@ -81,6 +82,20 @@ app.post("/api/notes", (request, response) => {
   response.json(note)
 });
 
+app.put("/api/notes/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const note = notes.find((note) => note.id === id);
+  const body = request.body
+
+  if (note) {
+    note.content = body.content;
+    note.important = Boolean(body.important) || false;
+    response.json(note);
+  } else {
+    response.status(404).end();
+  }
+});
+
 app.delete("/api/notes/:id", (request, response) => {
   const id = Number(request.params.id);
   const note = notes.find((x) => x.id == id);
@@ -95,7 +110,7 @@ app.delete("/api/notes/:id", (request, response) => {
 
 app.use(unknownEndpoint);
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
