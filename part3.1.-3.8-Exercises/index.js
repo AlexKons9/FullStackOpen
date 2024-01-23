@@ -1,6 +1,14 @@
 const express = require('express');
 const app = express();
+const morgan = require('morgan');
+
+morgan.token('req', function getId (req) {
+    console.log(req.body)
+    return JSON.stringify(req.body)
+  })
+
 app.use(express.json());
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req'));
 
 var persons = [
     { 
@@ -48,15 +56,15 @@ app.get("/info", (request, response) => {
 app.post("/api/persons", (request, response) => {
     const body = request.body;
 
-    if(!body.content) {
+    if(!body.name) {
         return response.status(400).json({
-            error: 'Content missing'
+            error: 'Name missing'
         });
     }
 
     var person = {
-        content: body.content,
-        important: Boolean(body.important) || false,
+        name: body.name,
+        number: Number(body.number),
         id: Math.max(...persons.map(p => p.id)) + 1
     }
 
