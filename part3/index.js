@@ -18,23 +18,23 @@ mongoose.connect(url)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true,
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false,
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true,
-  },
-];
+// let notes = [
+//   {
+//     id: 1,
+//     content: "HTML is easy",
+//     important: true,
+//   },
+//   {
+//     id: 2,
+//     content: "Browser can execute only JavaScript",
+//     important: false,
+//   },
+//   {
+//     id: 3,
+//     content: "GET and POST are the most important methods of HTTP protocol",
+//     important: true,
+//   },
+// ];
 
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
@@ -104,20 +104,27 @@ app.post("/api/notes", (request, response) => {
 });
 
 app.put("/api/notes/:id", (request, response) => {
-  // const id = Number(request.params.id);
-  // const note = notes.find((note) => note.id === id);
-  const body = request.body
-  
-  if (body) {
-    Note.updateOne(body).then((note) => {
-      response.json(note);
-  
-    })
-    // note.content = body.content;
-    // note.important = Boolean(body.important) || false;
-  } else {
-    response.status(404).end();
+  const body = request.body;
+  const id = request.params.id;
+  if(body.content === undefined){
+    return response.status(400).json({ error: 'content missing'});
   }
+
+  const update = {
+    id: id,
+    content: body.content,
+    important: body.important || false
+  };
+
+  Note.updateOne({_id: id}, update)
+    .then(() => {
+        response.json(update);
+    })
+    .catch((error) => {
+      console.log('Error updating note:', error);
+      response.status(500).json({ error: 'Internal Server Error' });
+    })  
+  
 });
 
 app.delete("/api/notes/:id", (request, response) => {
