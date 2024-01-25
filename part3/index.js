@@ -1,8 +1,8 @@
-require('dotenv').config()
+require('dotenv').config({path:'./a.env'})
 const express = require("express");
 const app = express();
-const cors = require('cors')
 const Note = require('./models/note')
+const cors = require('cors')
 
 const mongoose = require('mongoose')
 
@@ -104,14 +104,17 @@ app.post("/api/notes", (request, response) => {
 });
 
 app.put("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find((note) => note.id === id);
+  // const id = Number(request.params.id);
+  // const note = notes.find((note) => note.id === id);
   const body = request.body
-
-  if (note) {
-    note.content = body.content;
-    note.important = Boolean(body.important) || false;
-    response.json(note);
+  
+  if (body) {
+    Note.updateOne(body).then((note) => {
+      response.json(note);
+  
+    })
+    // note.content = body.content;
+    // note.important = Boolean(body.important) || false;
   } else {
     response.status(404).end();
   }
