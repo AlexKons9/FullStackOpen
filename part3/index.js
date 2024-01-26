@@ -1,33 +1,45 @@
+// Therefore, the correct order of middleware and route definitions is:
+
+// 1.Require Statements
+// 2.Middleware setup.
+// 3.Route definitions.
+// 4.Error handling middleware.
+// 5.Handling unknown endpoints.
+// 6.Server initialization.
+
+// Require Statements
 require('dotenv').config({path:'./a.env'})
+
+// Express and other module imports
 const express = require("express");
 const app = express();
-const Note = require('./models/note')
-const cors = require('cors')
+const Note = require('./models/note');
+const cors = require('cors'); //npm install cors
 
+// Middleware setup
+app.use(express.json()); // Parse incoming requests with JSON payloads
+app.use(cors()); // Enable Cross-Origin Resource Sharing (CORS)
+app.use(express.static('dist')); // Serve static files from the 'dist' directory
+
+// Logging middleware to log incoming requests
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method)
   console.log('Path:  ', request.path)
   console.log('Body:  ', request.body)
   console.log('---')
   next()
-}
-
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
-
-app.use(express.json());
+};
 app.use(requestLogger);
-app.use(cors());
-app.use(express.static('dist'));
 
+//functions
 const generateId = () => {
   const maxId = notes.length > 0
   ? Math.max(...notes.map(n => n.id))
   : 0
   return maxId + 1
-}
+};
 
+// Define route handlers
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
@@ -38,13 +50,7 @@ app.get("/api/notes", (request, response) => {
   })
 });
 
-app.get('/api/notes/:id', (request, response) => {
-  Note.findById(request.params.id).then(note => {
-    response.json(note)
-  })
-})
-
-app.get("/api/notes/:id", (request, response) => {
+app.get("/api/notes/:id", (request, response, next) => {
   Note.findById(request.params.id).then(note => {
     if (note) {
       response.json(note);
@@ -52,6 +58,7 @@ app.get("/api/notes/:id", (request, response) => {
       response.status(404).end();
     }
   })
+  .catch(error => next(error))
 });
 
 app.post("/api/notes", (request, response) => {
@@ -71,45 +78,48 @@ app.post("/api/notes", (request, response) => {
   })
 });
 
-app.put("/api/notes/:id", (request, response) => {
-  const body = request.body;
-  const id = request.params.id;
-  if(body.content === undefined){
-    return response.status(400).json({ error: 'content missing'});
-  }
+app.put('/api/notes/:id', (request, response, next) => {
+  const body = request.body
 
-  const update = {
-    id: id,
+  const note = {
     content: body.content,
-    important: body.important || false
-  };
-
-  Note.updateOne({_id: id}, update)
-    .then(() => {
-        response.json(update);
-    })
-    .catch((error) => {
-      console.log('Error updating note:', error);
-      response.status(500).json({ error: 'Internal Server Error' });
-    })  
-  
-});
-
-app.delete("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find((x) => x.id == id);
-  notes = notes.filter((note) => note.id !== id);
-
-  if (note) {
-    response.status(204).end();
-  } else {
-    response.status(404).end();
+    important: body.important,
   }
+
+  Note.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then(updatedNote => {
+      response.json(updatedNote)
+    })
+    .catch(error => next(error))
 });
 
+app.delete('/api/notes/:id', (request, response, next) => {
+  Note.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+});
+
+// Error handling middleware
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  console.log(error);
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+  next(error)
+};
+app.use(errorHandler);
+
+// Handle unknown endpoints
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT
+// Server initialization
+const PORT = process.env.PORT // Get the port from environment variables
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
