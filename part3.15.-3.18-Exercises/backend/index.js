@@ -14,7 +14,6 @@ morgan.token("req", function getId(req) {
 
 // Logging middleware to log additional information if needed
 const requestLogger = (request, response, next) => {
-  console.log('Additional error log: ');
   next(); // Call next to pass control to the next middleware
 };
 
