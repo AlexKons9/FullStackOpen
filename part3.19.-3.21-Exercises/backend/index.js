@@ -22,7 +22,7 @@ app.use(express.json());
 app.use(morgan("Api Log: :method :url :status :res[content-length] - :response-time ms :req"));
 app.use(requestLogger);
 app.use(cors());
-// app.use(express.static("dist")); // use dist from frontend build
+app.use(express.static("dist")); // use dist from frontend build
 
 
 
@@ -135,7 +135,7 @@ const unknownEndpoint = (request, response) => {
 };
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT //|| 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
