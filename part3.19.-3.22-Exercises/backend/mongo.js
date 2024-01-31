@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const mongoose = require("mongoose");
 
 if (process.argv.length < 3) {
@@ -35,7 +36,7 @@ if (process.argv.length > 3) {
 } else {
   Person.find({}).then((result) => {
     result.forEach((person) => {
-      person.name = person.name;
+      // person.name = person.name;
       console.log(person);
     });
     mongoose.connection.close();

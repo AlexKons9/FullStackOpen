@@ -32,8 +32,7 @@ app.use(express.static("dist")); // use dist from frontend build
 app.get("/api/persons", (request, response, next) => {
   Person.find({}).then((persons) => {
     response.json(persons);
-  })
-  .catch((error) => next(error));
+  }).catch((error) => next(error));
 });
 
 // GET BY ID
@@ -44,17 +43,15 @@ app.get("/api/persons/:id", (request, response, next) => {
     } else {
       return response.status(404).end();
     }
-  })
-  .catch((error) => next(error));
+  }).catch((error) => next(error));
 });
 
 // GET INFO
 app.get("/info", (request, response, next) => {
   Person.find({}).then((persons) => {
     response.send(`<p>Phonebook has info for ${persons.length} people</p>
-                       <p>${Date().toLowerCase()}</p>`);
-  })
-  .catch((error) => next(error));
+                   <p>${Date().toLowerCase()}</p>`);
+  }).catch((error) => next(error));
 });
 
 // POST
@@ -84,16 +81,16 @@ app.post("/api/persons", (request, response, next) => {
 
 // PUT
 app.put("/api/persons/:id", (request, response, next) => {
-  const { name, number } = request.body
+  const { name, number } = request.body;
   const id = request.params.id;
 
   Person.findByIdAndUpdate(
-      {_id: id}, 
-      {name, number},
-      { new: true, runValidators: true, context: 'query' }
-    )
+    { _id: id },
+    { name, number },
+    { new: true, runValidators: true, context: "query" }
+  )
     .then((updatedContact) => {
-        response.json(updatedContact);
+      response.json(updatedContact);
     })
     .catch((error) => next(error));
 });
@@ -103,14 +100,14 @@ app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
 
   Person.deleteOne({ _id: id })
-  .then((result) => {
-    if (result.deletedCount > 0) {
-      response.status(204).end();
-    } else {
-      response.status(404).json({ error: "Not Found" });
-    }
-  })
-  .catch((error) => next(error));
+    .then((result) => {
+      if (result.deletedCount > 0) {
+        response.status(204).end();
+      } else {
+        response.status(404).json({ error: "Not Found" });
+      }
+    })
+    .catch((error) => next(error));
 });
 
 // API END
@@ -119,10 +116,10 @@ app.delete("/api/persons/:id", (request, response, next) => {
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
   console.log(error);
-  if (error.name === 'CastError') {
+  if (error.name === "CastError") {
     return response.status(400).send({ error: error.message });
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message })
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
   next(error);
 };
@@ -131,11 +128,12 @@ app.use(errorHandler);
 
 // Handle unknown endpoints
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' });
+  response.status(404).send({ error: "unknown endpoint" });
 };
 app.use(unknownEndpoint);
 
-const PORT = process.env.PORT //|| 3001;
+// eslint-disable-next-line no-undef
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
